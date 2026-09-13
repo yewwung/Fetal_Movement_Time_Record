@@ -1,0 +1,11 @@
+{
+  "name": "fetal-diary-login",
+  "version": "1.0.0",
+  "description": "Phone authorization function for Fetal Movement Diary",
+  "main": "index.js",
+  "author": "yewwung <yewwung@163.com>",
+  "license": "MIT",
+  "dependencies": {
+    "wx-server-sdk": "latest"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "description": "无需服务器的本机胎动记录微信小程序",
+  "packOptions": {
+    "ignore": [
+      {
+        "type": "folder",
+        "value": "tests"
+      }
+    ]
+  },
+  "setting": {
+    "bundle": false,
+    "userConfirmedBundleSwitch": false,
+    "urlCheck": false,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": true,
+    "compileHotReLoad": true,
+    "useApiHook": true,
+    "useApiHostProcess": true,
+    "babelSetting": {
+      "ignore": [],
+      "disablePlugins": [],
+      "outputPath": ""
+    }
+  },
+  "compileType": "miniprogram",
+  "libVersion": "trial",
+  "appid": "wxe9975531813ff278",
+  "projectname": "fetal-movement-diary",
+  "miniprogramRoot": "./",
+  "cloudfunctionRoot": "./cloudfunctions/",
+  "condition": {}
+}

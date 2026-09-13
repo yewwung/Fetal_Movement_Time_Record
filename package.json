@@ -1,0 +1,14 @@
+{
+  "name": "fetal-movement-diary-miniprogram",
+  "version": "1.0.0",
+  "description": "Offline fetal movement diary WeChat Mini Program",
+  "main": "miniprogram/app.js",
+  "scripts": {
+    "test": "node miniprogram/tests/runtime-smoke.cjs",
+    "check": "node --check miniprogram/app.js && node --check miniprogram/config.js && node --check miniprogram/pages/index/index.js && node --check miniprogram/utils/date.js && node --check miniprogram/cloudfunctions/login/index.js"
+  },
+  "keywords": [],
+  "author": "yewwung <yewwung@163.com>",
+  "license": "MIT",
+  "type": "commonjs"
+}

@@ -1,0 +1,8 @@
+{
+  "name": "fetal-movement-diary-miniprogram",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Offline fetal movement diary WeChat Mini Program",
+  "author": "yewwung <yewwung@163.com>",
+  "type": "commonjs"
+}

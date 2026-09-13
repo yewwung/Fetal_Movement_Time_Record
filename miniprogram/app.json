@@ -1,0 +1,15 @@
+{
+  "pages": [
+    "pages/index/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "胎动日记",
+    "navigationBarBackgroundColor": "#f6f7f3",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f6f7f3",
+    "backgroundTextStyle": "light"
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

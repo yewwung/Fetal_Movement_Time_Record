@@ -1,0 +1,174 @@
+<view class="app-shell">
+  <view class="page-content">
+    <view wx:if="{{activeTab === 'home'}}" class="screen home-screen">
+      <view class="hero-row">
+        <view class="hero-copy">
+          <text class="date-label">{{dateLabel}}</text>
+          <text class="hero-title">记录每一次</text>
+          <text class="hero-title accent">小小的回应。</text>
+          <text class="hero-note">轻轻一点，留下宝宝今天的第 {{nextCount}} 次动静。</text>
+        </view>
+        <view wx:if="{{dueInfo}}" class="pregnancy-summary">
+          <text>孕周</text>
+          <view><text class="pregnancy-number">{{dueInfo.weeks}}</text><text>周</text><text class="pregnancy-number small">{{dueInfo.days}}</text><text>天</text></view>
+          <text class="due-date">预产期 {{dueInfo.dueText}}</text>
+        </view>
+        <button wx:else class="setup-button" data-tab="settings" bindtap="switchTab">设置孕期</button>
+      </view>
+
+      <view class="clock-section">
+        <view class="clock-toolbar">
+          <text class="section-label">现在</text>
+          <view class="segmented-control">
+            <button class="segment {{clockMode === 'digital' ? 'selected' : ''}}" data-mode="digital" bindtap="setClockMode">数字</button>
+            <button class="segment {{clockMode === 'analog' ? 'selected' : ''}}" data-mode="analog" bindtap="setClockMode">表盘</button>
+          </view>
+        </view>
+
+        <view wx:if="{{clockMode === 'digital'}}" class="digital-clock">
+          <text class="main-time">{{timeText}}</text>
+          <text class="seconds">{{secondText}}</text>
+        </view>
+        <view wx:else class="analog-clock">
+          <text class="clock-number number-12">12</text>
+          <text class="clock-number number-3">3</text>
+          <text class="clock-number number-6">6</text>
+          <text class="clock-number number-9">9</text>
+          <view class="clock-hand hour-hand" style="transform: translateX(-50%) rotate({{hourAngle}}deg);"></view>
+          <view class="clock-hand minute-hand" style="transform: translateX(-50%) rotate({{minuteAngle}}deg);"></view>
+          <view class="clock-hand second-hand" style="transform: translateX(-50%) rotate({{secondAngle}}deg);"></view>
+          <view class="clock-pin"></view>
+        </view>
+
+        <view class="record-actions">
+          <button class="record-button" bindtap="recordMovement" hover-class="record-button-pressed">
+            <text class="record-plus">＋</text>
+            <view class="record-copy"><text>记录胎动</text><text class="record-hint">保存当前时间</text></view>
+          </button>
+          <view class="today-count"><text class="count-number">{{todayCount}}</text><text>今日记录</text></view>
+        </view>
+      </view>
+
+      <view class="home-summary">
+        <view class="summary-heading"><view><text class="minor-label">TODAY</text><text class="summary-title">今天的节奏</text></view><button class="link-button" data-tab="stats" bindtap="switchTab">看趋势</button></view>
+        <view class="wave-chart"><view wx:for="{{todayWave}}" wx:key="key" class="wave-track"><view class="wave-bar {{index % 4 === 0 ? 'coral' : ''}}" style="{{item.heightStyle}}"></view></view></view>
+        <view class="wave-axis"><text>00</text><text>06</text><text>12</text><text>18</text><text>24</text></view>
+      </view>
+
+      <view class="recent-section">
+        <view class="summary-heading"><view><text class="minor-label">RECENT</text><text class="summary-title">最近记录</text></view><button class="link-button" data-tab="records" bindtap="switchTab">查看全部</button></view>
+        <view wx:if="{{recentRecords.length}}" class="recent-list">
+          <view wx:for="{{recentRecords}}" wx:key="id" class="recent-row" data-id="{{item.id}}" bindtap="openRecordEditor"><view class="record-dot"></view><text class="recent-time">{{item.time}}</text><text class="recent-day">今天</text><text class="recent-edit">修改</text></view>
+        </view>
+        <view wx:else class="inline-empty"><view class="pulse-line"></view><text>还没有记录，等待第一次小小的回应。</text></view>
+      </view>
+    </view>
+
+    <view wx:elif="{{activeTab === 'records'}}" class="screen records-screen">
+      <view class="screen-title-row">
+        <view><text class="screen-title">时间线</text><text class="screen-note">每一次记录，都是今天的证据。</text></view>
+        <view class="total-stat"><text class="total-number">{{totalCount}}</text><text>总记录</text></view>
+      </view>
+
+      <view class="export-section">
+        <view class="section-heading-row"><view><text class="section-title">导出 CSV</text><text class="section-note">选择范围，保存或分享至手机</text></view><text class="export-count">{{exportCount}} 条</text></view>
+        <view class="date-range">
+          <picker class="date-picker" mode="date" value="{{exportFrom}}" end="{{exportTo}}" bindchange="onExportFromChange"><view><text class="date-caption">从</text><text>{{exportFrom}}</text></view></picker>
+          <picker class="date-picker" mode="date" value="{{exportTo}}" start="{{exportFrom}}" end="{{todayDate}}" bindchange="onExportToChange"><view><text class="date-caption">至</text><text>{{exportTo}}</text></view></picker>
+        </view>
+        <button class="dark-button" bindtap="exportCsv">导出并分享 CSV</button>
+      </view>
+
+      <view class="records-toolbar">
+        <view class="records-toolbar-copy"><text class="section-title">胎动记录</text><text class="section-note">显示 {{visibleCount}} / {{totalCount}} 条</text></view>
+        <button class="danger-link" bindtap="clearAllRecords" disabled="{{!totalCount}}">清空记录</button>
+      </view>
+      <view class="record-filter-control">
+        <button class="record-filter {{recordFilter === 'today' ? 'selected' : ''}}" data-filter="today" bindtap="setRecordFilter">今天</button>
+        <button class="record-filter {{recordFilter === 'week' ? 'selected' : ''}}" data-filter="week" bindtap="setRecordFilter">近 7 天</button>
+        <button class="record-filter {{recordFilter === 'all' ? 'selected' : ''}}" data-filter="all" bindtap="setRecordFilter">全部</button>
+      </view>
+      <view class="record-layout-control"><text>显示方式</text><button class="layout-option {{recordLayout === 'compact' ? 'selected' : ''}}" data-layout="compact" bindtap="setRecordLayout">紧凑</button><button class="layout-option {{recordLayout === 'list' ? 'selected' : ''}}" data-layout="list" bindtap="setRecordLayout">列表</button></view>
+      <view wx:if="{{editingId}}" class="edit-panel">
+        <view class="edit-panel-heading"><view><text class="section-title">修改记录</text><text class="section-note">{{editingLabel}}</text></view><button class="edit-cancel" bindtap="cancelEditRecord">取消</button></view>
+        <view class="edit-fields">
+          <picker class="edit-picker" mode="date" value="{{editingDate}}" end="{{todayDate}}" bindchange="onEditDateChange"><view><text class="date-caption">日期</text><text>{{editingDate}}</text></view></picker>
+          <picker class="edit-picker" mode="time" value="{{editingTime}}" bindchange="onEditTimeChange"><view><text class="date-caption">时间</text><text>{{editingTime}}</text></view></picker>
+        </view>
+        <button class="dark-button edit-save-button" bindtap="saveEditRecord">保存修改</button>
+      </view>
+      <view wx:if="{{groupedRecords.length}}" class="timeline {{recordLayout === 'compact' ? 'compact' : ''}}">
+        <view wx:for="{{groupedRecords}}" wx:key="key" class="day-group">
+          <view class="day-heading" data-key="{{item.key}}" bindtap="toggleDayGroup">
+            <view class="day-heading-copy"><text wx:if="{{item.relativeLabel}}" class="day-relative">{{item.relativeLabel}}</text><text class="day-date">{{item.fullDate}}</text></view>
+            <view class="day-heading-meta"><text class="day-count">{{item.count}} 次</text><text class="day-toggle">{{item.collapsed ? '展开' : '收起'}}</text></view>
+          </view>
+          <view wx:if="{{!item.collapsed}}" class="day-records">
+            <view wx:for="{{item.records}}" wx:for-item="record" wx:key="id" class="timeline-row">
+              <view class="timeline-dot"></view><view class="timeline-datetime"><text class="timeline-date">{{record.dateText}}</text><text class="timeline-time">{{record.time}}</text></view><text class="timeline-kind">胎动</text>
+              <view class="timeline-actions"><button class="edit-button" data-id="{{record.id}}" bindtap="startEditRecord">修改</button><button class="delete-button" data-id="{{record.id}}" bindtap="deleteRecord">删除</button></view>
+            </view>
+          </view>
+        </view>
+      </view>
+      <view wx:elif="{{totalCount}}" class="filter-empty"><text class="empty-title">这个范围还没有记录</text><text class="empty-note">切换到“全部”查看更早的胎动记录。</text><button class="outline-button" data-filter="all" bindtap="setRecordFilter">查看全部</button></view>
+      <view wx:else class="empty-state"><view class="empty-symbol"><view class="pulse-line"></view></view><text class="empty-title">还没有胎动记录</text><text class="empty-note">回到记录页，点击按钮保存第一条时间。</text><button class="outline-button" data-tab="home" bindtap="switchTab">去记录</button></view>
+    </view>
+
+    <view wx:elif="{{activeTab === 'stats'}}" class="screen stats-screen">
+      <view class="screen-title-row"><view><text class="screen-title">趋势</text><text class="screen-note">用一眼看懂最近的节奏。</text></view><view class="total-stat coral-stat"><text class="total-number">{{weeklyCount}}</text><text>近 7 天</text></view></view>
+
+      <view class="chart-section">
+        <view class="section-heading-row"><view><text class="minor-label">DAILY RHYTHM</text><text class="section-title">每日记录</text></view><text class="section-note">近 7 天</text></view>
+        <view class="bar-chart">
+          <view wx:for="{{dailyStats}}" wx:key="key" class="bar-column"><text class="bar-value">{{item.count || ''}}</text><view class="bar-track"><view class="bar-fill {{item.count ? '' : 'empty'}}" style="{{item.heightStyle}}"></view></view><text class="bar-label">周{{item.label}}</text></view>
+        </view>
+      </view>
+
+      <view class="chart-section hourly-section">
+        <view class="section-heading-row"><view><text class="minor-label">ACTIVE HOURS</text><text class="section-title">一天中的时段</text></view><text class="section-note">每 4 小时</text></view>
+        <view class="hour-chart">
+          <view wx:for="{{hourlyStats}}" wx:key="label" class="hour-column"><view class="hour-track"><view class="hour-fill {{item.count ? '' : 'empty'}}" style="{{item.heightStyle}}"></view></view><text class="bar-label">{{item.label}}</text></view>
+        </view>
+        <view class="chart-footer"><view class="legend"><view class="legend-dot"></view><text>柱形越高，记录越多</text></view><text>{{mostActiveText}}</text></view>
+      </view>
+
+      <view class="insight-strip"><view class="spark-mark">✦</view><view><text class="insight-title">{{weeklyCount ? '节奏正在被记录' : '从今天开始建立节奏'}}</text><text class="insight-note">{{weeklyCount ? '保持每天记录，趋势会越来越清晰。' : '每次轻轻点击，都会成为值得回看的线索。'}}</text></view></view>
+    </view>
+
+    <view wx:else class="screen settings-screen">
+      <view class="screen-title-row"><view><text class="screen-title">设置</text><text class="screen-note">让记录更贴合你的孕期。</text></view></view>
+
+      <view class="settings-section">
+        <view class="settings-heading"><view class="settings-mark coral-mark"></view><view><text class="section-title">孕期计算</text><text class="section-note">只在本机保存，不会上传</text></view></view>
+        <view class="choice-control"><button class="choice {{settings.dueType === 'lmp' ? 'selected' : ''}}" data-type="lmp" bindtap="setDueType">末次月经</button><button class="choice {{settings.dueType === 'due' ? 'selected' : ''}}" data-type="due" bindtap="setDueType">预产期</button></view>
+        <picker mode="date" value="{{settings.dueDate}}" start="{{settings.dueType === 'due' ? todayDate : ''}}" end="{{settings.dueType === 'lmp' ? todayDate : ''}}" bindchange="onDueDateChange">
+          <view class="setting-field"><text>{{settings.dueType === 'lmp' ? '末次月经日期' : '预产期日期'}}</text><text class="field-value {{settings.dueDate ? '' : 'placeholder'}}">{{settings.dueDate || '请选择日期'}}</text></view>
+        </picker>
+        <view wx:if="{{dueInfo}}" class="due-summary"><view><text>当前孕周</text><text class="due-value">{{dueInfo.weeks}}周{{dueInfo.days}}天</text></view><view><text>预产期</text><text class="due-value">{{dueInfo.dueText}}</text></view></view>
+      </view>
+
+      <view class="settings-section compact-section">
+        <view class="settings-heading"><view class="settings-mark blue-mark"></view><view><text class="section-title">本机离线模式</text><text class="section-note">无需登录、服务器和数据库</text></view></view>
+        <view class="login-card">
+          <view class="login-copy"><text class="login-title">隐私数据不上云</text><text class="row-note">胎动记录和孕期设置只保存在当前手机微信中</text></view>
+        </view>
+        <text class="local-mode-note">更换手机、删除小程序或清理微信数据可能丢失记录，请定期导出 CSV 备份。</text>
+      </view>
+
+      <view class="settings-section compact-section">
+        <view class="settings-heading"><view class="settings-mark danger-mark"></view><view><text class="section-title">数据管理</text><text class="section-note">清空前会再次确认</text></view></view>
+        <button class="setting-row danger-row" bindtap="clearAllRecords" disabled="{{!totalCount}}"><view><text>清空全部记录</text><text class="row-note">当前共 {{totalCount}} 条，清空后无法恢复</text></view><text class="row-arrow">›</text></button>
+      </view>
+
+      <view class="privacy-note"><text>胎动日记仅用于记录与回看，不替代医生的专业判断。如有不适或胎动明显减少，请及时联系医生。</text></view>
+    </view>
+  </view>
+
+  <view class="bottom-nav safe-area-bottom">
+    <button class="nav-item {{activeTab === 'home' ? 'active' : ''}}" data-tab="home" bindtap="switchTab"><view class="nav-symbol"><view class="home-symbol"></view></view><text>记录</text></button>
+    <button class="nav-item {{activeTab === 'records' ? 'active' : ''}}" data-tab="records" bindtap="switchTab"><view class="nav-symbol"><view class="timeline-symbol"></view></view><text>时间线</text></button>
+    <button class="nav-item {{activeTab === 'stats' ? 'active' : ''}}" data-tab="stats" bindtap="switchTab"><view class="nav-symbol bars-symbol"><view></view><view></view><view></view></view><text>趋势</text></button>
+    <button class="nav-item {{activeTab === 'settings' ? 'active' : ''}}" data-tab="settings" bindtap="switchTab"><view class="nav-symbol"><view class="gear-symbol"></view></view><text>设置</text></button>
+  </view>
+</view>
